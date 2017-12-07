@@ -13,8 +13,8 @@ def get_locks():
             stdin=sys.stdin
             )
     proc.wait()
-    locks = proc.stdout.read()
-    return [lock["path"] for lock in json.loads(locks.decode())]
+    locks = proc.stdout.read().decode()
+    return [lock["path"] for lock in json.loads(locks)]
 
 
 def get_staged_files():
@@ -25,7 +25,8 @@ def get_staged_files():
             stdin=sys.stdin
             )
     proc.wait()
-    return [line[3:].strip() for line in proc.stdout.readlines() if line[0] not in (" ", "?")]  # noqa
+    lines = [line.decode() for line in proc.stdout.readlines()]
+    return [line[3:].strip() for line in lines if line[0] not in (" ", "?")]
 
 
 staged = get_staged_files()
@@ -34,7 +35,7 @@ locks = get_locks()
 staged_locked_files = []
 
 for path in staged:
-    if path.decode() in locks:
+    if path in locks:
         staged_locked_files.append(path)
 
 if staged_locked_files:
