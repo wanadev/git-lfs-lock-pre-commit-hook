@@ -1,0 +1,46 @@
+#!/usr/bin/env python
+
+import sys
+import json
+import subprocess
+
+
+def get_locks():
+    proc = subprocess.Popen(
+            ["git", "lfs", "locks", "--json"],
+            stdout=subprocess.PIPE,
+            stderr=sys.stderr,
+            stdin=sys.stdin
+            )
+    proc.wait()
+    locks = proc.stdout.read()
+    return [lock["path"] for lock in json.loads(locks.decode())]
+
+
+def get_staged_files():
+    proc = subprocess.Popen(
+            ["git", "status", "--porcelain"],
+            stdout=subprocess.PIPE,
+            stderr=sys.stderr,
+            stdin=sys.stdin
+            )
+    proc.wait()
+    return [line[3:].strip() for line in proc.stdout.readlines() if line[0] not in (" ", "?")]  # noqa
+
+
+staged = get_staged_files()
+locks = get_locks()
+
+staged_locked_files = []
+
+for path in staged:
+    if path.decode() in locks:
+        staged_locked_files.append(path)
+
+if staged_locked_files:
+    print("\x1B[1;37;41m Commit rejected, you staged locked file(s): \x1B[0m")
+    print("\n".join(["  * %s" % path for path in staged_locked_files]))
+    sys.exit(1)
+
+
+# vim:ft=python
