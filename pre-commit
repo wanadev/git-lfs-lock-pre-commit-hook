@@ -6,27 +6,23 @@ import subprocess
 
 
 def get_locks():
-    proc = subprocess.Popen(
+    locks = subprocess.check_output(
             ["git", "lfs", "locks", "--json"],
-            stdout=subprocess.PIPE,
             stderr=sys.stderr,
             stdin=sys.stdin
             )
-    proc.wait()
-    locks = proc.stdout.read().decode()
+    locks = locks.decode()
     return [lock["path"] for lock in json.loads(locks)]
 
 
 def get_staged_files():
-    proc = subprocess.Popen(
+    lines = subprocess.check_output(
             ["git", "status", "--porcelain"],
-            stdout=subprocess.PIPE,
             stderr=sys.stderr,
             stdin=sys.stdin
             )
-    proc.wait()
-    lines = [line.decode() for line in proc.stdout.readlines()]
-    return [line[3:].strip() for line in lines if line[0] not in (" ", "?")]
+    lines = lines.decode().split("\n")
+    return [l[3:].strip() for l in lines.split() if (l and l[0] not in (" ", "?"))]  # noqa
 
 
 staged = get_staged_files()
