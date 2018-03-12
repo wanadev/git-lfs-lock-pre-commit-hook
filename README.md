@@ -44,6 +44,11 @@ or manually, if you do not have GNU make:
     pyinstaller -F pre-commit
 
 
+## Changelog
+
+* **1.0.1:** Fixes deadlock on large git command output
+* **1.0.0:** Initial release
+
 
 [lfs]: https://github.com/git-lfs/git-lfs
 [lfs-lock]: https://github.com/git-lfs/git-lfs/blob/master/docs/api/locking.md
